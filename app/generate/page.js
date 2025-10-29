@@ -4,23 +4,44 @@ import { ToastContainer, toast } from 'react-toastify';
 import { useState } from 'react';
 
 const Generate = () => {
-    const [link, setlink] = useState("")
-    const [linktext, setlinktext] = useState("")
+    // const [link, setlink] = useState("")
+    // const [linktext, setlinktext] = useState("")
+    const [Links, setLinks] = useState([{ link: "", linktext: "" }])
     const [handle, sethandle] = useState("")
     const [pic, setpic] = useState("")
 
+    const handleChange = (index,link,linktext) => {
+        setLinks ((initialLinks)=>{
+            return initialLinks.map((item,i)=>{
+                if(i==index){
+                    return{link,linktext}
+                }
+                else{
+                    return item
+                }
+            })
+        })
+    }
+
+
+    const addLink = () => {
+        setLinks(Links.concat([{link:"",linktext:""}]))
+    }
+    
+    
 
 
 
-    const addLink = async (text, link,handle) => {
+    const submitLinks = async (text, link, handle) => {
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
 
         const raw = JSON.stringify({
-            "link": link,
-            "linktext": text,
-            "handle": handle
+            "Links": Links ,
+            "handle": handle,
+            "pic":pic
         });
+      
 
         const requestOptions = {
             method: "POST",
@@ -31,9 +52,16 @@ const Generate = () => {
 
         const r = await fetch("http://localhost:3000/api/add", requestOptions)
         const result = await r.json()
-        toast(result.message)
-        setlink("")
-        setlinktext("")
+        if (result.success ){
+            toast.success(result.message)
+            setLinks([])
+            setpic("")
+            sethandle("")
+        }
+        else{
+            toast.error(result.message)
+        }
+
     }
 
 
@@ -49,23 +77,24 @@ const Generate = () => {
 
                             <h2 className='font-semibold text-2xl ' >Step 1: Claim your Handle</h2>
                             <div className='mx-4' >
-                                <input value={handle || ""}  onChange={e=>{sethandle(e.target.value)}} className='bg-white mx-2 my-2 px-3 py-2 focus:outline-blue-500 rounded-full ' type="text" placeholder='Choose a Handle' />
+                                <input value={handle || ""} onChange={e => { sethandle(e.target.value) }} className='bg-white mx-2 my-2 px-3 py-2 focus:outline-blue-500 rounded-full ' type="text" placeholder='Choose a Handle' />
                             </div>
                         </div>
                         <div className="item">
                             <h2 className='font-semibold text-2xl ' >Step 2: Add Links</h2>
-                            <div className='mx-4 ' >
-                                <input value={linktext || ""}  onChange={e=>{setlinktext(e.target.value)}} className='bg-white mx-2 my-2 px-3 py-2 focus:outline-blue-500 rounded-full ' type="text" placeholder='Enter link text' />
-                                <input value={link || ""}  onChange={e=>{setlink(e.target.value)}} className='bg-white mx-2 my-2 px-3 py-2 focus:outline-blue-500 rounded-full ' type="text" placeholder='Enter link' />
-                                <button  onClick={()=>addLink(linktext, link, handle)} className=' cursor-pointer p-5 py-2 mx-2 text-white font-bold bg-[#1e2330] rounded-3xl ' >Add Link</button>
-                            </div>
+                            { Links && Links.map((item,index)=>{
+                                return <div key={index}  className='mx-4 ' >
+                                <input value={item.link || ""} onChange={e => { handleChange(index, e.target.value,item.linktext) }} className='bg-white mx-2 my-2 px-3 py-2 focus:outline-blue-500 rounded-full ' type="text" placeholder='Enter link' />
+                                <input value={item.linktext || ""} onChange={e => { handleChange(index,item.link, e.target.value) }} className='bg-white mx-2 my-2 px-3 py-2 focus:outline-blue-500 rounded-full ' type="text" placeholder='Enter link text' />
+                            </div>})}
+                            <button onClick={() => addLink()} className=' cursor-pointer p-5 py-2 mx-2 text-white font-bold bg-[#1e2330] rounded-3xl ' >+ Add Link</button>
                         </div>
                         <div className="item">
                             <h2 className='font-semibold text-2xl ' >Step 3: Add Picture and finalize </h2>
                             <div className='mx-4 flex flex-col' >
-                                <input value={pic || ""}  onChange={e=>{setpic(e.target.value)}} className='bg-white mx-2 my-2 px-3 py-2 focus:outline-blue-500 rounded-full ' type="text" placeholder='Enter link to your Picture' />
+                                <input value={pic || ""} onChange={e => { setpic(e.target.value) }} className='bg-white mx-2 my-2 px-3 py-2 focus:outline-blue-500 rounded-full ' type="text" placeholder='Enter link to your Picture' />
                                 <div className='flex flex-col items-center my-3' >
-                                    <button className='p-5 py-2 mx-2 w-fit   text-white font-bold bg-[#1e2330] rounded-3xl' >Create your BitLink</button>
+                                    <button disabled ={pic==""||handle==""||Links[0].linktext==""} onClick={()=>{submitLinks()}}  className=' disabled:bg-slate-500 p-5 py-2 mx-2 w-fit  text-white font-bold bg-[#1e2330] rounded-3xl' >Create your BitLink</button>
                                 </div>
                             </div>
                         </div>
