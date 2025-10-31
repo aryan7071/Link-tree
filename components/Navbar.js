@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 const Navbar = () => {
   const pathname = usePathname()
-  const showNavbar = ["/", "/generate"].include(pathname)
+  const showNavbar = ["/", "/generate"].includes(pathname)
   return (<> {showNavbar && <nav className='flex bg-white w-[80vw] fixed  mx-auto top-10 right-[10vw] rounded-full p-10  py-6 justify-between' >
       <div className="logo flex gap-20  items-center ">
         <Link href={"/"} >
